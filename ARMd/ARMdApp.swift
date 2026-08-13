@@ -12,6 +12,7 @@ struct ARMdApp: App {
     @State private var workspace = Workspace()
     @State private var store = FileStore()
     @State private var toolchain = Toolchain()
+    @State private var starPrompt = StarPrompt()
     @AppStorage("uiFontSize") private var fontSize = UIScale.defaultBase
     /// Lives here rather than in ContentView so the View menu can drive it — and,
     /// unlike the toolbar button it replaces, the choice survives a relaunch.
@@ -26,7 +27,8 @@ struct ARMdApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(workspace: workspace, store: store,
-                        scale: UIScale(base: fontSize), showSidebar: showSidebar)
+                        scale: UIScale(base: fontSize), showSidebar: showSidebar,
+                        starPrompt: starPrompt)
                 .frame(minWidth: 980, minHeight: 600)
                 .task { await toolchain.check() }
                 .sheet(isPresented: .constant(toolchain.needsSetup)) {
@@ -52,6 +54,9 @@ struct ARMdApp: App {
             }
             // Routing the arithmetic through UIScale(base:) keeps the 9–28 clamp in
             // exactly one place, so no menu item can drive the value out of range.
+            CommandGroup(replacing: .help) {
+                Button("ARMd on GitHub") { starPrompt.openRepository() }
+            }
             CommandGroup(after: .sidebar) {
                 Button(showSidebar ? "Hide Sidebar" : "Show Sidebar") { showSidebar.toggle() }
                     .keyboardShortcut("s", modifiers: [.command, .control])

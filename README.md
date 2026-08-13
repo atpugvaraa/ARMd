@@ -18,7 +18,19 @@ Apple's Command Line Tools are required, and ARMd installs them for you the firs
 
 ## Install
 
-Download the `.app` and drag it to Applications.
+Paste this into Terminal:
+
+```
+brew install --cask atpugvaraa/atpugvaraa/armd
+```
+
+That's it — ARMd lands in your Applications folder and opens straight away. It's signed and notarised by Apple, so there's no "unidentified developer" warning and nothing to right-click.
+
+No Homebrew? Install it first with the one line from [brew.sh](https://brew.sh), then run the command above.
+
+Prefer not to use Terminal at all? Download the `.app` from [Releases](https://github.com/atpugvaraa/ARMd/releases/latest) and drag it to Applications.
+
+To update later: `brew upgrade --cask armd`
 
 ## Using it
 

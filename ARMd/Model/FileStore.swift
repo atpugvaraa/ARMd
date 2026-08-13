@@ -10,17 +10,16 @@ final class FileStore {
     private(set) var folder: URL?
     private(set) var files: [URL] = []
 
-    private static let bookmarkKey = "ARMdLastFolderBookmark"
-
-    init() { restoreLastFolder() }
+    /// ARMd opens with no folder and an untitled document, so the first thing a
+    /// student sees is a program they can run rather than somebody's Downloads
+    /// folder. Reopening the last folder was convenient for one person and
+    /// confusing for everyone else.
+    init() {}
 
     var folderName: String { folder?.lastPathComponent ?? "No Folder" }
 
-    /// The app sandbox is off, so a plain path bookmark is enough — no
-    /// security scope to start or stop.
     func openFolder(_ url: URL) {
         folder = url
-        UserDefaults.standard.set(url.path, forKey: Self.bookmarkKey)
         reload()
         watchFolder()
         PerfLog.info("opened folder \(url.lastPathComponent)")
@@ -90,14 +89,6 @@ final class FileStore {
             .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
     }
 
-    private func restoreLastFolder() {
-        guard let path = UserDefaults.standard.string(forKey: Self.bookmarkKey) else { return }
-        let url = URL(fileURLWithPath: path)
-        guard FileManager.default.fileExists(atPath: path) else { return }
-        folder = url
-        reload()
-        watchFolder()
-    }
 
     /// Where to save an untitled document. Deliberately does not set
     /// `allowedContentTypes` — the lab uses `.s`, `.asm` and occasionally `.txt`,

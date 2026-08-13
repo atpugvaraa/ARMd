@@ -191,7 +191,9 @@ cask "armd" do
   desc "Write and run Keil-style ARM7 assembly on Apple Silicon"
   homepage "https://github.com/$APP_REPO"
 
-  depends_on macos: ">= :sequoia"
+  # Bare symbol, not ">= :sequoia": the string-comparison form is deprecated and
+  # Homebrew warns on every install. A bare symbol already means "at least".
+  depends_on macos: :sequoia
 
   app "ARMd.app"
 

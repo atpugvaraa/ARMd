@@ -79,26 +79,48 @@ struct FileBrowser: View {
     private var footer: some View {
         VStack(spacing: 0) {
             Divider()
-            HStack(spacing: 8) {
-                Button {
-                    onNew()
-                } label: {
-                    Label("New File", systemImage: "plus")
-                }
-                Spacer(minLength: 4)
-                Button {
-                    onChooseFolder()
-                } label: {
-                    Label("Open Folder…", systemImage: "folder")
-                }
+            // The labelled version is what a first-time user needs, but pinning the
+            // sidebar's minimum width to it kept the whole column wider than it had
+            // to be. ViewThatFits keeps the words for as long as they fit and drops
+            // to shorter ones — then to icons — only when the column is genuinely
+            // narrow, so the floor can come down without losing the labels.
+            ViewThatFits(in: .horizontal) {
+                footerRow(newTitle: "New File", openTitle: "Open Folder…")
+                footerRow(newTitle: "New", openTitle: "Open…")
+                footerRow(newTitle: nil, openTitle: nil)
             }
             .buttonStyle(.accessoryBar)
             .controlSize(.small)
-            .lineLimit(1)
-            .fixedSize()
             .padding(.horizontal, 8)
             .frame(height: 30)
         }
         .background(.bar)
+    }
+
+    /// `nil` titles give the icon-only fallback, which keeps its meaning through
+    /// tooltips — acceptable as a last resort at a width where nothing else fits.
+    private func footerRow(newTitle: String?, openTitle: String?) -> some View {
+        HStack(spacing: 8) {
+            Button(action: onNew) {
+                label("plus", newTitle)
+            }
+            .help("New File (⌘N)")
+            Spacer(minLength: 4)
+            Button(action: onChooseFolder) {
+                label("folder", openTitle)
+            }
+            .help("Open Folder… (⌘O)")
+        }
+        .lineLimit(1)
+        .fixedSize()
+    }
+
+    @ViewBuilder
+    private func label(_ symbol: String, _ title: String?) -> some View {
+        if let title {
+            Label(title, systemImage: symbol)
+        } else {
+            Image(systemName: symbol)
+        }
     }
 }

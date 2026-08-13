@@ -31,6 +31,10 @@ final class Workspace {
     /// stale trace is still the best record of the last run — but it says so.
     private(set) var traceIsStale = false
 
+    /// Runs that finished cleanly this session. Only a count — what to do with it is
+    /// a view's business, so the model stays free of UserDefaults and AppKit.
+    private(set) var successfulBuilds = 0
+
     private(set) var snapshots: [MachineSnapshot] = []
     private(set) var diagnostics: [Diagnostic] = []
     private(set) var consoleText: String = ""
@@ -224,6 +228,7 @@ final class Workspace {
             // A run that produced none has nothing to show, so stay in the editor.
             editorMode = result.snapshots.isEmpty ? .edit : .debug
             traceIsStale = false
+            if result.exitCode == 0 { successfulBuilds += 1 }
             consoleText = Workspace.summary(of: result)
             PerfLog.info("build produced \(result.snapshots.count) snapshots, exit \(result.exitCode)")
         case .failed(let message, let diags):

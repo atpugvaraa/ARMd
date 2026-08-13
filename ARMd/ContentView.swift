@@ -14,6 +14,7 @@ struct ContentView: View {
     let scale: UIScale
     @State private var showingPreload = false
     let showSidebar: Bool
+    @Bindable var starPrompt: StarPrompt
 
     // HSplitView, not NavigationSplitView.
     //
@@ -46,11 +47,11 @@ struct ContentView: View {
                         store.moveToTrash(url)
                     }
                 )
-                // 220, not 180: the footer carries two labelled buttons under
-                // `.fixedSize()`, so it never compresses below ~180pt. A minimum at
-                // that boundary let the sidebar be dragged until those buttons
-                // clipped — the unlabelled-glyph problem returning by another route.
-                .frame(minWidth: 220, idealWidth: 260, maxWidth: 460)
+                // The footer used to pin this floor at 220 because its labelled
+                // buttons could not compress. It now falls back to shorter titles
+                // and then to icons (see FileBrowser.footerRow), so the sidebar can
+                // start and stay genuinely narrow.
+                .frame(minWidth: 170, idealWidth: 180, maxWidth: 460)
             }
 
             VSplitView {
@@ -80,9 +81,20 @@ struct ContentView: View {
         .sheet(isPresented: $showingPreload) {
             PreloadEditor(workspace: workspace)
         }
+        .onChange(of: workspace.successfulBuilds) { _, builds in
+            starPrompt.consider(afterSuccessfulBuilds: builds)
+        }
+        .alert("Enjoying ARMd?", isPresented: $starPrompt.isPresented) {
+            Button("Star on GitHub") { starPrompt.openRepository() }
+            Button("Not Now", role: .cancel) {}
+            Button("Don't Ask Again") { starPrompt.declineForever() }
+        } message: {
+            Text("ARMd is free and open source. A star helps other students find it.")
+        }
     }
 }
 
 #Preview {
-    ContentView(workspace: Workspace(), store: FileStore(), scale: UIScale(), showSidebar: true)
+    ContentView(workspace: Workspace(), store: FileStore(), scale: UIScale(),
+                showSidebar: true, starPrompt: StarPrompt())
 }

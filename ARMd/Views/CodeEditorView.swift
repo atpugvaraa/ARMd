@@ -95,6 +95,16 @@ final class LineNumberRuler: NSRulerView {
     @available(*, unavailable)
     required init(coder: NSCoder) { fatalError("LineNumberRuler is created in code only") }
 
+    /// `NSRulerView`'s own drawing paints a border down the trailing edge, and it
+    /// spans the full height of the enclosing scroll view — so it ran past the
+    /// bottom of the text and bled into the debug bar beneath. Taking over `draw`
+    /// entirely removes it; the gutter needs no rule, only its numbers.
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor.clear.setFill()
+        dirtyRect.fill()
+        drawHashMarksAndLabels(in: dirtyRect)
+    }
+
     override func drawHashMarksAndLabels(in rect: NSRect) {
         guard let textView = clientView as? NSTextView,
               let layoutManager = textView.layoutManager,

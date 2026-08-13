@@ -61,9 +61,27 @@ struct CodeEditorView: NSViewRepresentable {
         }
     }
 
+    /// Four columns, measured from the font rather than assumed. Whitespace is
+    /// significant in ARMASM — column one is the label column — so a tab rendering
+    /// eight wide here and four elsewhere misleads about the real layout.
+    static func fourColumnStyle(for font: NSFont) -> NSParagraphStyle {
+        let style = NSMutableParagraphStyle()
+        style.tabStops = []
+        style.defaultTabInterval = 4 * (" " as NSString).size(withAttributes: [.font: font]).width
+        return style
+    }
+
     private func apply(scale: UIScale, to textView: NSTextView, ruler: LineNumberRuler) {
         let body = NSFont.monospacedSystemFont(ofSize: scale.base, weight: .regular)
         if textView.font != body { textView.font = body }
+
+        let style = CodeEditorView.fourColumnStyle(for: body)
+        textView.defaultParagraphStyle = style
+        textView.typingAttributes[.paragraphStyle] = style
+        if let storage = textView.textStorage {
+            storage.addAttribute(.paragraphStyle, value: style,
+                                 range: NSRange(location: 0, length: storage.length))
+        }
         ruler.font = NSFont.monospacedSystemFont(ofSize: max(9, scale.base - 3), weight: .regular)
         ruler.ruleThickness = max(34, scale.gutterWidth)
     }
@@ -73,6 +91,16 @@ struct CodeEditorView: NSViewRepresentable {
         weak var ruler: LineNumberRuler?
 
         init(_ parent: CodeEditorView) { self.parent = parent }
+
+        /// Tab inserts spaces, never a tab character. A real tab leaves the label
+        /// column at the mercy of whatever opens the file next — Keil, a lab PC, a
+        /// diff — and in ARMASM that column decides whether a token is a label or an
+        /// instruction.
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            guard commandSelector == #selector(NSResponder.insertTab(_:)) else { return false }
+            textView.insertText("    ", replacementRange: textView.selectedRange())
+            return true
+        }
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }

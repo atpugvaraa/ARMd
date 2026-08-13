@@ -6,13 +6,16 @@ struct InspectorColumn: View {
     let cpsr: UInt32
     let image: MemoryImage
     let scale: UIScale
+    let changed: Set<Int>
+    let cpsrChanged: Bool
     let onEditPreload: () -> Void
 
     var body: some View {
         VSplitView {
             // Seventeen rows at roughly 18pt plus the header need about 330pt.
             // At 240 the register file was clipped at R9.
-            RegistersPane(registers: registers, cpsr: cpsr, scale: scale)
+            RegistersPane(registers: registers, cpsr: cpsr, scale: scale,
+                          changed: changed, cpsrChanged: cpsrChanged)
                 .frame(minHeight: scale.registersMinHeight,
                        idealHeight: scale.registersMinHeight + 30)
             MemoryPane(image: image, scale: scale, onEditPreload: onEditPreload)

@@ -83,6 +83,27 @@ final class Workspace {
         currentSnapshot?.registers ?? [UInt32](repeating: 0, count: 16)
     }
 
+    /// Registers whose value differs from the previous step, and whether CPSR moved
+    /// with them. Empty at the first step and before any run — there is nothing to
+    /// have changed from.
+    var changedRegisters: Set<Int> {
+        guard cursor > 0,
+              snapshots.indices.contains(cursor),
+              snapshots.indices.contains(cursor - 1)
+        else { return [] }
+        let now = snapshots[cursor].registers
+        let previous = snapshots[cursor - 1].registers
+        return Set((0..<16).filter { now[$0] != previous[$0] })
+    }
+
+    var cpsrChanged: Bool {
+        guard cursor > 0,
+              snapshots.indices.contains(cursor),
+              snapshots.indices.contains(cursor - 1)
+        else { return false }
+        return snapshots[cursor].cpsr != snapshots[cursor - 1].cpsr
+    }
+
     /// 0-based source line of the instruction at the cursor, for the editor highlight.
     var currentSourceLine: Int? { currentSnapshot?.sourceLine }
 

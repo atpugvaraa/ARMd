@@ -19,7 +19,7 @@ struct ConsolePane: View {
                 Spacer()
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .frame(height: PaneHeader.height)
             .background(.quaternary.opacity(0.5))
 
             Divider()

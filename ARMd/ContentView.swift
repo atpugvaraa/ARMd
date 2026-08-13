@@ -16,6 +16,7 @@ struct ContentView: View {
     let showSidebar: Bool
     @Bindable var starPrompt: StarPrompt
 
+
     // HSplitView, not NavigationSplitView.
     //
     // NavigationSplitView keeps two disagreeing widths for its sidebar: the AppKit
@@ -30,8 +31,8 @@ struct ContentView: View {
     // editor, inspector and console in this same window. The costs are the native
     // sidebar toggle and the sidebar material, both rebuilt below.
     var body: some View {
-        HSplitView {
-            if showSidebar {
+        SplitLayout(sidebarVisible: showSidebar,
+                    minimumWidth: 170, defaultWidth: 210, maximumWidth: 420) {
                 FileBrowser(
                     store: store,
                     selection: workspace.currentFile,
@@ -47,13 +48,7 @@ struct ContentView: View {
                         store.moveToTrash(url)
                     }
                 )
-                // The footer used to pin this floor at 220 because its labelled
-                // buttons could not compress. It now falls back to shorter titles
-                // and then to icons (see FileBrowser.footerRow), so the sidebar can
-                // start and stay genuinely narrow.
-                .frame(minWidth: 170, idealWidth: 180, maxWidth: 460)
-            }
-
+        } detail: {
             VSplitView {
                 HSplitView {
                     VStack(spacing: 0) {
@@ -67,6 +62,8 @@ struct ContentView: View {
                                     cpsr: workspace.currentSnapshot?.cpsr ?? 0,
                                     image: workspace.memory,
                                     scale: scale,
+                                    changed: workspace.changedRegisters,
+                                    cpsrChanged: workspace.cpsrChanged,
                                     onEditPreload: { showingPreload = true })
                 }
                 ConsolePane(text: workspace.consoleText,
@@ -74,7 +71,6 @@ struct ContentView: View {
                             scale: scale)
                     .frame(minHeight: 120, idealHeight: 170)
             }
-            .frame(minWidth: 640)
         }
         .navigationTitle(workspace.displayName)
         .navigationSubtitle(store.folderName)
@@ -97,4 +93,54 @@ struct ContentView: View {
 #Preview {
     ContentView(workspace: Workspace(), store: FileStore(), scale: UIScale(),
                 showSidebar: true, starPrompt: StarPrompt())
+}
+
+#Preview {
+    ContentView(workspace: Workspace(), store: FileStore(), scale: UIScale(),
+                showSidebar: true, starPrompt: StarPrompt())
+}
+
+/// The outer split's divider.
+///
+/// Pure SwiftUI, deliberately. An `NSViewRepresentable` here — even one reporting
+/// a hard 6pt through `sizeThatFits` and `intrinsicContentSize` — stopped its
+/// sibling `FileBrowser` from rendering at all, leaving an empty sidebar. Whatever
+/// the interop cause, a representable does not belong as a sibling in this HStack.
+///
+/// `onContinuousHover` rather than `onHover` for the cursor: SwiftUI resets the
+/// cursor as the pointer moves, so a one-shot `.set()` on entry gets undone.
+/// Continuous hover fires on every movement and re-applies it.
+private struct SidebarDivider: View {
+    @Binding var width: Double
+    let range: ClosedRange<Double>
+
+    /// The width when the drag began — `DragGesture` reports translation from the
+    /// gesture's start, so adding it to the live width each frame would accelerate.
+    @State private var startWidth: Double?
+
+    var body: some View {
+        Rectangle()
+            .fill(Color(nsColor: .separatorColor))
+            .frame(width: 1)
+            .frame(width: 6)
+            .contentShape(Rectangle())
+            .onContinuousHover { phase in
+                switch phase {
+                case .active: NSCursor.resizeLeftRight.set()
+                case .ended: NSCursor.arrow.set()
+                @unknown default: NSCursor.arrow.set()
+                }
+            }
+            .gesture(
+                // minimumDistance 2: a bare click must not count as a resize.
+                DragGesture(minimumDistance: 2)
+                    .onChanged { value in
+                        let start = startWidth ?? width
+                        if startWidth == nil { startWidth = start }
+                        width = min(max(range.lowerBound, start + value.translation.width),
+                                    range.upperBound)
+                    }
+                    .onEnded { _ in startWidth = nil }
+            )
+    }
 }

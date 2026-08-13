@@ -19,6 +19,7 @@ struct MemoryPane: View {
                 .help("Set memory values before running")
                 .padding(.trailing, 8)
             }
+            .frame(height: PaneHeader.height)
             .background(.quaternary.opacity(0.5))
             let addresses = image.touchedWordAddresses
             if addresses.isEmpty {

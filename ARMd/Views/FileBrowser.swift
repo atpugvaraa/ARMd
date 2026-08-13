@@ -32,7 +32,7 @@ struct FileBrowser: View {
         // behind the editor rather than one you can see the desktop through. Every
         // other surface in ARMd is opaque, and a single vibrant panel read as a
         // different application.
-        .background(Color(nsColor: .underPageBackgroundColor))
+        .background(Color(nsColor: .windowBackgroundColor))
         .contextMenu {
             Button("New File") { onNew() }
             Button("Open Folder…") { onChooseFolder() }
@@ -86,7 +86,11 @@ struct FileBrowser: View {
             // narrow, so the floor can come down without losing the labels.
             ViewThatFits(in: .horizontal) {
                 footerRow(newTitle: "New File", openTitle: "Open Folder…")
+                ViewThatFits(in: .horizontal) {
+                footerRow(newTitle: "New File", openTitle: "Open Folder…")
                 footerRow(newTitle: "New", openTitle: "Open…")
+                footerRow(newTitle: nil, openTitle: nil)
+            }
                 footerRow(newTitle: nil, openTitle: nil)
             }
             .buttonStyle(.accessoryBar)

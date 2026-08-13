@@ -42,7 +42,7 @@ struct EditorPane: View {
             }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .frame(height: PaneHeader.height)
         .background(.quaternary.opacity(0.5))
     }
 
@@ -61,7 +61,9 @@ struct EditorPane: View {
         } else {
             // AppKit, for the line-number gutter — see CodeEditorView.
             CodeEditorView(text: $workspace.source, scale: scale)
-                .background(.background)
+                // The editor is the darkest surface in the window; the sidebar,
+                // inspector and console keep the lighter window tone.
+                .background(Color(nsColor: .underPageBackgroundColor))
         }
     }
 }

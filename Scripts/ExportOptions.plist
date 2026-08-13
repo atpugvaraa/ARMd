@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- developer-id: signed for distribution outside the Mac App Store, which is
+	     the only method notarisation accepts. Not app-store, not development. -->
+	<key>method</key>
+	<string>developer-id</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>teamID</key>
+	<string>3YK32DPS3W</string>
+	<!-- export writes the .app out rather than uploading it to Apple. -->
+	<key>destination</key>
+	<string>export</string>
+</dict>
+</plist>

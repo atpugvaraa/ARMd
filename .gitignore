@@ -1,0 +1,15 @@
+.DS_Store
+
+# Build products
+build/
+dist/
+DerivedData/
+
+# Xcode per-user state. The shared scheme in xcshareddata/ is committed; this is
+# only window positions, breakpoints, and the last-selected target.
+*.xcuserdatad
+*.xcuserstate
+
+# Subagent-driven-development scratch: briefs, reports, review packages, ledger.
+.superpowers/
+*.md
